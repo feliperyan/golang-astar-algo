@@ -10,6 +10,19 @@ import (
 	"math"
 )
 
+type MapElement struct {
+	pos_x    int
+	pos_y    int
+	name     string
+	passable bool
+}
+
+type Map2d struct {
+	x     int
+	y     int
+	two_d [][]MapElement
+}
+
 func new_map(width, height int) Map2d {
 	a_map := Map2d{width, height, make([][]MapElement, width)}
 
