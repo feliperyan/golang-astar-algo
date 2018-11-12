@@ -61,9 +61,9 @@ func (pq *PriorityQueue) update(item *Item, value *MapElement, priority int) {
 func Example_priorityQueue() {
 
 	// Some items and their priorities.
-	i1 := MapElement{2, 2, "a", false}
-	i2 := MapElement{2, 3, "b", false}
-	i3 := MapElement{2, 4, "c", false}
+	i1 := MapElement{2, 2, "a", false, nil}
+	i2 := MapElement{2, 3, "b", false, nil}
+	i3 := MapElement{2, 4, "c", false, nil}
 
 	items := map[*MapElement]int{
 		&i1: 3, &i2: 2, &i3: 4,
@@ -85,7 +85,7 @@ func Example_priorityQueue() {
 
 	// Insert a new item and then modify its priority.
 	item := &Item{
-		value:    &MapElement{2, 1, "d", false},
+		value:    &MapElement{2, 1, "d", false, nil},
 		priority: 1,
 	}
 	heap.Push(&pq, item)
