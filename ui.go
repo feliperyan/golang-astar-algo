@@ -54,6 +54,9 @@ func init() {
 	chestImg.DrawImage(img3, op)
 
 	dungeon = generateDungeon(15, 10, 60, 10)
+
+	bob = getRandomPosition(&dungeon, "b", false)
+	gold = getRandomPosition(&dungeon, "g", true)
 }
 
 func getRandomPosition(aMap *Map2d, name string, pass bool) *MapElement {
@@ -75,7 +78,8 @@ func update(screen *ebiten.Image) error {
 		dungeon = generateDungeon(15, 10, 60, 10)
 		bob = getRandomPosition(&dungeon, "b", false)
 		gold = getRandomPosition(&dungeon, "g", true)
-		fmt.Printf(print_map(&dungeon))
+
+		// fmt.Printf(print_map(&dungeon))
 	}
 
 	// Draw map
