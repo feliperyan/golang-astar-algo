@@ -316,8 +316,8 @@ func testDungeon() {
 
 }
 
-func main() {
+// func main() {
 
-	fmt.Println("\nRunning main... \n")
-	testDungeon()
-}
+// 	fmt.Println("\nRunning main... \n")
+// 	testDungeon()
+// }
