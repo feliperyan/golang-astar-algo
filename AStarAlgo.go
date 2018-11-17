@@ -284,12 +284,7 @@ func testDungeon() {
 	for {
 		bob = dungeon.two_d[rand.Intn(dungeon.x-1)][rand.Intn(dungeon.y-1)]
 		if bob.passable {
-			// bob.name = "b"
-			// bob.passable = false
-
-			// I think putElement is screwing up.
 			bob, _ = putElementinMap2d(&dungeon, "b", false, bob.pos_x, bob.pos_y)
-
 			break
 		}
 	}

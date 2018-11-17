@@ -12,9 +12,14 @@ import (
 )
 
 const (
-	screenWidth  = 320
-	screenHeight = 240
+	screenWidth  = 640
+	screenHeight = 480
 	maxAngle     = 256
+	tileSize     = 32
+	mapWidth     = 35
+	mapHeight    = 25
+	tunnels      = 60
+	tunnelLength = 12
 )
 
 type Sprite struct {
@@ -27,10 +32,14 @@ type Sprite struct {
 var ebImg *ebiten.Image
 var knightImg *ebiten.Image
 var chestImg *ebiten.Image
+var coinImg *ebiten.Image
+
 var op = &ebiten.DrawImageOptions{}
 var dungeon Map2d
 var bob *MapElement
 var gold *MapElement
+
+var canReset chan bool
 
 func init() {
 	op := &ebiten.DrawImageOptions{}
@@ -53,10 +62,20 @@ func init() {
 	op.ColorM.Scale(1, 1, 1, 1.0)
 	chestImg.DrawImage(img3, op)
 
-	dungeon = generateDungeon(15, 10, 60, 10)
+	img4, _, _ := ebitenutil.NewImageFromFile("images/coin_anim_f0.png", ebiten.FilterDefault)
+	w, h = img4.Size()
+	coinImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
+	op.ColorM.Scale(1, 1, 1, 1.0)
+	coinImg.DrawImage(img4, op)
+
+	dungeon = generateDungeon(mapWidth, mapHeight, tunnels, tunnelLength)
 
 	bob = getRandomPosition(&dungeon, "b", false)
 	gold = getRandomPosition(&dungeon, "g", true)
+
+	// Reset key can be pressed once we start the program
+	canReset = make(chan bool, 1)
+	canReset <- true
 }
 
 func getRandomPosition(aMap *Map2d, name string, pass bool) *MapElement {
@@ -75,11 +94,26 @@ func getRandomPosition(aMap *Map2d, name string, pass bool) *MapElement {
 func update(screen *ebiten.Image) error {
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		dungeon = generateDungeon(15, 10, 60, 10)
-		bob = getRandomPosition(&dungeon, "b", false)
-		gold = getRandomPosition(&dungeon, "g", true)
+		select {
+		case action := <-canReset:
+			fmt.Println("received spacebar", action)
+			dungeon = generateDungeon(mapWidth, mapHeight, tunnels, tunnelLength)
+			bob = getRandomPosition(&dungeon, "b", false)
+			gold = getRandomPosition(&dungeon, "g", true)
 
-		// fmt.Printf(print_map(&dungeon))
+			// wait a second before we can do it again otherwise
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				canReset <- true
+			}()
+		default:
+			fmt.Println("Multiple hits on spacebar, keeping it to one press.")
+		}
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyP) {
+		bob.path = aStarAlgorithm(&dungeon, bob, gold)
+		fmt.Println(len(bob.path))
 	}
 
 	// Draw map
@@ -107,6 +141,14 @@ func update(screen *ebiten.Image) error {
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64((gold.pos_x)*w), float64((gold.pos_y)*w))
 		screen.DrawImage(chestImg, op)
+	}
+
+	if bob.path != nil {
+		for _, p := range bob.path {
+			op.GeoM.Reset()
+			op.GeoM.Translate(float64(p.pos_x*16)+4, float64(p.pos_y*16)+4)
+			screen.DrawImage(coinImg, op)
+		}
 	}
 
 	if ebiten.IsDrawingSkipped() {
