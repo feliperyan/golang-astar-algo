@@ -12,14 +12,15 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
-	maxAngle     = 256
-	tileSize     = 32
-	mapWidth     = 35
-	mapHeight    = 25
-	tunnels      = 60
-	tunnelLength = 12
+	screenWidth           = 640
+	screenHeight          = 480
+	maxAngle              = 256
+	mapWidth              = 40
+	mapHeight             = 25
+	tunnels               = 130
+	tunnelLength          = 15
+	mapProportionModifier = 1
+	screenFactor          = 2
 )
 
 type Sprite struct {
@@ -28,6 +29,8 @@ type Sprite struct {
 	x           int
 	y           int
 }
+
+var tileSize int
 
 var ebImg *ebiten.Image
 var knightImg *ebiten.Image
@@ -44,26 +47,37 @@ var canReset chan bool
 func init() {
 	op := &ebiten.DrawImageOptions{}
 
+	tileSize = 16
+	tileSize = int(float64(tileSize) * mapProportionModifier)
+
 	img, _, _ := ebitenutil.NewImageFromFile("images/floor_2.png", ebiten.FilterDefault)
 	w, h := img.Size()
+	w = int(float64(w) * mapProportionModifier)
+	h = int(float64(h) * mapProportionModifier)
 	ebImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
 	op.ColorM.Scale(1, 1, 1, 1.0)
 	ebImg.DrawImage(img, op)
 
 	img2, _, _ := ebitenutil.NewImageFromFile("images/knight_f_idle_anim_f0.png", ebiten.FilterDefault)
 	w, h = img2.Size()
+	w = int(float64(w) * mapProportionModifier)
+	h = int(float64(h) * mapProportionModifier)
 	knightImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
 	op.ColorM.Scale(1, 1, 1, 1.0)
 	knightImg.DrawImage(img2, op)
 
 	img3, _, _ := ebitenutil.NewImageFromFile("images/chest_empty_open_anim_f0.png", ebiten.FilterDefault)
 	w, h = img3.Size()
+	w = int(float64(w) * mapProportionModifier)
+	h = int(float64(h) * mapProportionModifier)
 	chestImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
 	op.ColorM.Scale(1, 1, 1, 1.0)
 	chestImg.DrawImage(img3, op)
 
 	img4, _, _ := ebitenutil.NewImageFromFile("images/coin_anim_f0.png", ebiten.FilterDefault)
 	w, h = img4.Size()
+	w = int(float64(w) * mapProportionModifier)
+	h = int(float64(h) * mapProportionModifier)
 	coinImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
 	op.ColorM.Scale(1, 1, 1, 1.0)
 	coinImg.DrawImage(img4, op)
@@ -117,7 +131,7 @@ func update(screen *ebiten.Image) error {
 	}
 
 	// Draw map
-	w, h := ebImg.Size()
+	w, h := tileSize, tileSize
 	for colNum, row := range dungeon.two_d {
 		for elNum, e := range row {
 			op.GeoM.Reset()
@@ -132,21 +146,21 @@ func update(screen *ebiten.Image) error {
 		msg := fmt.Sprintf("bob %v %v", bob.pos_x, bob.pos_y)
 		ebitenutil.DebugPrint(screen, msg)
 		op.GeoM.Reset()
-		op.GeoM.Translate(float64((bob.pos_x)*w), float64((bob.pos_y-1)*w))
+		op.GeoM.Translate(float64((bob.pos_x)*tileSize), float64((bob.pos_y-1)*tileSize))
 		screen.DrawImage(knightImg, op)
 	}
 	if gold != nil {
 		msg := fmt.Sprintf("         | gold %v %v", gold.pos_x, gold.pos_y)
 		ebitenutil.DebugPrint(screen, msg)
 		op.GeoM.Reset()
-		op.GeoM.Translate(float64((gold.pos_x)*w), float64((gold.pos_y)*w))
+		op.GeoM.Translate(float64((gold.pos_x)*tileSize), float64((gold.pos_y)*tileSize))
 		screen.DrawImage(chestImg, op)
 	}
 
 	if bob.path != nil {
 		for _, p := range bob.path {
 			op.GeoM.Reset()
-			op.GeoM.Translate(float64(p.pos_x*16)+4, float64(p.pos_y*16)+4)
+			op.GeoM.Translate(float64(p.pos_x*tileSize)+2, float64(p.pos_y*tileSize)+2)
 			screen.DrawImage(coinImg, op)
 		}
 	}
@@ -160,7 +174,7 @@ func update(screen *ebiten.Image) error {
 
 func main() {
 
-	if err := ebiten.Run(update, screenWidth, screenHeight, 2, "FRyan Demo"); err != nil {
+	if err := ebiten.Run(update, screenWidth, screenHeight, screenFactor, "FRyan Demo"); err != nil {
 		log.Fatal(err)
 	}
 }
