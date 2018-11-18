@@ -26,16 +26,11 @@ const (
 type Sprite struct {
 	imageWidth  int
 	imageHeight int
-	x           int
-	y           int
+	imagePath   string
+	image       *ebiten.Image
 }
 
 var tileSize int
-
-var ebImg *ebiten.Image
-var knightImg *ebiten.Image
-var chestImg *ebiten.Image
-var coinImg *ebiten.Image
 
 var op = &ebiten.DrawImageOptions{}
 var dungeon Map2d
@@ -44,50 +39,48 @@ var gold *MapElement
 
 var canReset chan bool
 
-func init() {
+var floorSprite *Sprite
+var knightSprite *Sprite
+var chestSprite *Sprite
+var coinSprite *Sprite
+
+func (s *Sprite) initSpriteImage() {
 	op := &ebiten.DrawImageOptions{}
+	img, _, _ := ebitenutil.NewImageFromFile(s.imagePath, ebiten.FilterDefault)
+	s.imageWidth, s.imageHeight = img.Size()
+	s.imageWidth = int(float64(s.imageWidth) * mapProportionModifier)
+	s.imageHeight = int(float64(s.imageHeight) * mapProportionModifier)
+	s.image, _ = ebiten.NewImage(s.imageWidth, s.imageHeight, ebiten.FilterDefault)
+	op.ColorM.Scale(1, 1, 1, 1.0)
+	s.image.DrawImage(img, op)
+}
+
+func createSprite(imagePath string) *Sprite {
+	s := Sprite{0, 0, imagePath, nil}
+	s.initSpriteImage()
+	return &s
+}
+
+func init() {
 
 	tileSize = 16
 	tileSize = int(float64(tileSize) * mapProportionModifier)
 
-	img, _, _ := ebitenutil.NewImageFromFile("images/floor_2.png", ebiten.FilterDefault)
-	w, h := img.Size()
-	w = int(float64(w) * mapProportionModifier)
-	h = int(float64(h) * mapProportionModifier)
-	ebImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
-	op.ColorM.Scale(1, 1, 1, 1.0)
-	ebImg.DrawImage(img, op)
+	// Init the sprite images
+	floorSprite = createSprite("images/floor_2.png")
+	knightSprite = createSprite("images/knight_f_idle_anim_f0.png")
+	chestSprite = createSprite("images/chest_empty_open_anim_f0.png")
+	coinSprite = createSprite("images/coin_anim_f0.png")
 
-	img2, _, _ := ebitenutil.NewImageFromFile("images/knight_f_idle_anim_f0.png", ebiten.FilterDefault)
-	w, h = img2.Size()
-	w = int(float64(w) * mapProportionModifier)
-	h = int(float64(h) * mapProportionModifier)
-	knightImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
-	op.ColorM.Scale(1, 1, 1, 1.0)
-	knightImg.DrawImage(img2, op)
-
-	img3, _, _ := ebitenutil.NewImageFromFile("images/chest_empty_open_anim_f0.png", ebiten.FilterDefault)
-	w, h = img3.Size()
-	w = int(float64(w) * mapProportionModifier)
-	h = int(float64(h) * mapProportionModifier)
-	chestImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
-	op.ColorM.Scale(1, 1, 1, 1.0)
-	chestImg.DrawImage(img3, op)
-
-	img4, _, _ := ebitenutil.NewImageFromFile("images/coin_anim_f0.png", ebiten.FilterDefault)
-	w, h = img4.Size()
-	w = int(float64(w) * mapProportionModifier)
-	h = int(float64(h) * mapProportionModifier)
-	coinImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
-	op.ColorM.Scale(1, 1, 1, 1.0)
-	coinImg.DrawImage(img4, op)
-
+	// Generate a random Dungeon.
 	dungeon = generateDungeon(mapWidth, mapHeight, tunnels, tunnelLength)
 
+	// Place bob the knight and a chest of gold at a random floor tile
 	bob = getRandomPosition(&dungeon, "b", false)
 	gold = getRandomPosition(&dungeon, "g", true)
 
-	// Reset key can be pressed once we start the program
+	// Push a value into channel so reset key can be pressed
+	// once we start the program
 	canReset = make(chan bool, 1)
 	canReset <- true
 }
@@ -137,7 +130,7 @@ func update(screen *ebiten.Image) error {
 			op.GeoM.Reset()
 			if e.name != "#" {
 				op.GeoM.Translate(float64(colNum*h), float64(elNum*w))
-				screen.DrawImage(ebImg, op)
+				screen.DrawImage(floorSprite.image, op)
 			}
 		}
 	}
@@ -147,21 +140,21 @@ func update(screen *ebiten.Image) error {
 		ebitenutil.DebugPrint(screen, msg)
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64((bob.pos_x)*tileSize), float64((bob.pos_y-1)*tileSize))
-		screen.DrawImage(knightImg, op)
+		screen.DrawImage(knightSprite.image, op)
 	}
 	if gold != nil {
 		msg := fmt.Sprintf("         | gold %v %v", gold.pos_x, gold.pos_y)
 		ebitenutil.DebugPrint(screen, msg)
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64((gold.pos_x)*tileSize), float64((gold.pos_y)*tileSize))
-		screen.DrawImage(chestImg, op)
+		screen.DrawImage(chestSprite.image, op)
 	}
 
 	if bob.path != nil {
 		for _, p := range bob.path {
 			op.GeoM.Reset()
 			op.GeoM.Translate(float64(p.pos_x*tileSize)+2, float64(p.pos_y*tileSize)+2)
-			screen.DrawImage(coinImg, op)
+			screen.DrawImage(coinSprite.image, op)
 		}
 	}
 
