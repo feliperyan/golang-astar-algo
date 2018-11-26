@@ -30,19 +30,18 @@ type Sprite struct {
 	image       *ebiten.Image
 }
 
-var tileSize int
-
-var op = &ebiten.DrawImageOptions{}
-var dungeon Map2d
-var bob *MapElement
-var gold *MapElement
-
-var canReset chan bool
-
-var floorSprite *Sprite
-var knightSprite *Sprite
-var chestSprite *Sprite
-var coinSprite *Sprite
+var (
+	tileSize     int
+	op           = &ebiten.DrawImageOptions{}
+	dungeon      Map2d
+	bob          *MapElement
+	gold         *MapElement
+	canReset     chan bool
+	floorSprite  *Sprite
+	knightSprite *Sprite
+	chestSprite  *Sprite
+	coinSprite   *Sprite
+)
 
 func (s *Sprite) initSpriteImage() {
 	op := &ebiten.DrawImageOptions{}
