@@ -122,6 +122,10 @@ func update(screen *ebiten.Image) error {
 		fmt.Println(len(bob.path))
 	}
 
+	if ebiten.IsKeyPressed(ebiten.KeyM) {
+
+	}
+
 	// Draw map
 	w, h := tileSize, tileSize
 	for colNum, row := range dungeon.two_d {
@@ -141,6 +145,7 @@ func update(screen *ebiten.Image) error {
 		op.GeoM.Translate(float64((bob.pos_x)*tileSize), float64((bob.pos_y-1)*tileSize))
 		screen.DrawImage(knightSprite.image, op)
 	}
+
 	if gold != nil {
 		msg := fmt.Sprintf("         | gold %v %v", gold.pos_x, gold.pos_y)
 		ebitenutil.DebugPrint(screen, msg)
