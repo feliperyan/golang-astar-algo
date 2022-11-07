@@ -235,12 +235,6 @@ func testPath() {
 	fmt.Print("\n")
 	a_map := new_map(6, 6)
 
-	// bob := MapElement{0, 2, "b", false, nil}
-	// a_map.two_d[0][2] = bob
-
-	// goal := MapElement{4, 1, "*", true, nil}
-	// a_map.two_d[4][1] = goal
-
 	bob, _ := putElementinMap2d(&a_map, "b", false, 0, 2)
 	goal, _ := putElementinMap2d(&a_map, "*", true, 4, 1)
 
@@ -253,24 +247,11 @@ func testPath() {
 
 	fmt.Printf(print_map(&a_map))
 
-	// results := aStarAlgorithm(&a_map, &bob, &a_map.two_d[4][1])
-	// results := aStarAlgorithm(&a_map, &bob, &goal)
 	results := aStarAlgorithm(&a_map, bob, goal)
 
 	paintThem(results)
 
 	fmt.Printf(print_map(&a_map))
-
-	// paths := make(chan []*MapElement)
-
-	// // Passing values into a channel via a go routine, this feels messy
-	// // kinda repeating myself but it seems to work.
-	// go func(a_map *Map2d, start *MapElement, goal *MapElement) {
-	// 	paths <- aStarAlgorithm(a_map, start, goal)
-	// }(&a_map, &bob, &a_map.two_d[4][1])
-
-	// result := <-paths
-	// fmt.Printf("\n Channel Value:\n%s", result)
 }
 
 func testDungeon() {
@@ -297,22 +278,9 @@ func testDungeon() {
 		}
 	}
 
-	// fmt.Printf(print_map(&dungeon))
-
 	fmt.Println("Done. Algo running...")
 
 	way := aStarAlgorithm(&dungeon, bob, goal)
 
 	fmt.Println("Algo done, len: ", len(way))
-
-	// paintThem(way)
-
-	// fmt.Printf(print_map(&dungeon))
-
 }
-
-// func main() {
-
-// 	fmt.Println("\nRunning main... \n")
-// 	testDungeon()
-// }
